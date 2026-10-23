@@ -1,0 +1,44 @@
+# 业余无线电日志：Web 应用 + 独立 MySQL
+services:
+  db:
+    image: mysql:8.0
+    container_name: wavelog-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${WAVELOG_DB_NAME}
+      MYSQL_USER: ${WAVELOG_DB_USER}
+      MYSQL_PASSWORD: ${WAVELOG_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${WAVELOG_DB_ROOT_PASSWORD}
+      TZ: ${TZ}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${WAVELOG_DB_ROOT_PASSWORD}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    logging: &log
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  wavelog:
+    image: ghcr.io/wavelog/wavelog:latest
+    container_name: wavelog
+    restart: unless-stopped
+    ports:
+      - "${WAVELOG_PORT:-8088}:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: ${WAVELOG_DB_NAME}
+      DB_USER: ${WAVELOG_DB_USER}
+      DB_PASSWORD: ${WAVELOG_DB_PASSWORD}
+      TZ: ${TZ}
+    volumes:
+      - ./data/wavelog:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *log

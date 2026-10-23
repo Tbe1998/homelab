@@ -1,0 +1,12 @@
+{
+  "_comment": "复制为 checks.json 后按实际服务修改；webhook 留空则只写日志",
+  "flap_threshold": 3,
+  "webhook": "",
+  "checks": [
+    { "name": "nginx-443",  "type": "http", "url": "https://example.com/", "expect": "" },
+    { "name": "wavelog",    "type": "http", "url": "http://192.168.1.6:8088/" },
+    { "name": "homeassistant", "type": "http", "url": "http://127.0.0.1:8123/manifest.json" },
+    { "name": "snipeit-db", "type": "tcp",  "host": "127.0.0.1", "port": 3306 },
+    { "name": "certs",      "type": "tcp",  "host": "example.com", "port": 443 }
+  ]
+}

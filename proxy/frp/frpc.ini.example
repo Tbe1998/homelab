@@ -1,0 +1,41 @@
+# frp 客户端模板：内网服务穿透到一台云主机，公网只需放行云主机这一个 IP
+# 原则：默认全注释，需要时才单条启用；管理类端口换高位并强口令
+# 真实配置（含公网 IP 与完整端口清单）不入库，见 docs/security.md
+
+[common]
+server_addr = <frps-host>        ; 云主机地址，不要提交真实值
+server_port = 7000
+server_udp_port = 7001
+; token 从环境变量读，frp 0.35+ 支持 frpc -c 配合 env
+; token = ${FRP_TOKEN}
+log_file = /var/log/frpc.log
+log_level = info
+log_max_days = 7
+
+; ── 仅 HTTPS 入口（最常用）
+[web_https]
+type = tcp
+local_ip = 192.168.1.6
+local_port = 443
+remote_port = 443
+
+; ── SSH：改高位端口 + 仅密钥登录
+; [ssh_admin]
+; type = tcp
+; local_ip = 192.168.1.6
+; local_port = 22
+; remote_port = 22222
+
+; ── DSM 管理界面：不建议长期暴露
+; [dsm_https]
+; type = tcp
+; local_ip = 192.168.1.6
+; local_port = 5001
+; remote_port = 5001
+
+; ── UDP 服务示例（游戏/语音）
+; [game_udp]
+; type = udp
+; local_ip = 192.168.1.6
+; local_port = 19132
+; remote_port = 19132

@@ -1,0 +1,57 @@
+# 资产台账：应用 + MySQL，凭据全部来自 .env
+services:
+  db:
+    image: mysql:8.0
+    container_name: snipeit-db
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: ${TZ}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    logging: &log
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  app:
+    image: snipe/snipe-it:v8.8.0
+    container_name: snipeit-app
+    restart: unless-stopped
+    # 只在内网暴露，不写公网端口映射
+    ports:
+      - "${APP_PORT:-8087}:80"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      APP_URL: http://${NAS_HOST}:${APP_PORT:-8087}
+      APP_TIMEZONE: ${TZ}
+      APP_LOCALE: zh-CN
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      MAIL_MAILER: log
+      SESSION_DRIVER: file
+      TZ: ${TZ}
+    volumes:
+      - ./data/snipeit:/var/lib/snipe-it
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *log

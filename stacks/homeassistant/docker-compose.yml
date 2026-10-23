@@ -1,0 +1,18 @@
+# 智能家居中枢：仅内网，host 网络（设备发现需要 mDNS/广播）
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ./data/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    # host 网络下不写 ports；若改 bridge，需显式映射 8123 并放弃自动发现
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,0 +1,19 @@
+# 无头浏览器服务：默认插件集在容器内会抢焦点，必须关闭
+services:
+  camofox:
+    image: ghcr.io/jo-inc/camofox-browser:1.15.0
+    container_name: camofox
+    restart: unless-stopped
+    ports:
+      - "${CAMOFOX_PORT:-9377}:9377"
+    environment:
+      TZ: ${TZ}
+      CAMOFOX_DISABLE_DEFAULT_ADDONS: "1"
+    volumes:
+      - ./data:/data
+    shm_size: "1gb"      # 浏览器渲染必需，默认 64m 会 OOM
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

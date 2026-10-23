@@ -1,0 +1,27 @@
+# 凭据与本机状态，一律不入库
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+
+# 运行态
+data/
+*.log
+*.pid
+state/
+__pycache__/
+*.pyc
+.venv/
+venv/
+backups/
+*.tar.gz
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store
+@eaDir/
