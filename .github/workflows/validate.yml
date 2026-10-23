@@ -1,0 +1,47 @@
+name: validate
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  configs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 语法检查
+        run: python3 -m py_compile scripts/health_check.py
+
+      - name: 探活脚本自检（不依赖网络）
+        run: python3 scripts/health_check.py --selftest
+
+      - name: JSON 配置可解析
+        run: python3 -c "import json;json.load(open('scripts/checks.example.json'))"
+
+      - name: Bash 语法检查
+        run: for f in scripts/*.sh; do bash -n "$f"; done
+
+      - name: ShellCheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          shellcheck -S warning scripts/*.sh
+
+      - name: 校验 compose 文件
+        run: |
+          set -e
+          for d in stacks/*/; do
+            echo "== $d"
+            [ -f "$d/.env.example" ] || { echo "::error::$d 缺少 .env.example"; exit 1; }
+            cp "$d/.env.example" "$d/.env"
+            ( cd "$d" && docker compose config -q )
+          done
+
+      - name: 凭据泄露扫描（硬编码口令/私钥）
+        run: |
+          set +e
+          hits=$(grep -rnE '(PRIVATE KEY-----|password\s*[:=]\s*["'\'']?[A-Za-z0-9]{12,}' \
+                  --include='*.yml' --include='*.yaml' --include='*.conf' --include='*.ini' \
+                  --include='*.sh' --include='*.py' . | grep -v '.env.example' | grep -v 'change-me')
+          if [ -n "$hits" ]; then echo "$hits"; echo "::error::疑似硬编码凭据"; exit 1; fi
+          echo "未发现硬编码凭据"
