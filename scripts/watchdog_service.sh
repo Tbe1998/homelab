@@ -52,8 +52,7 @@ probe_usb() {
 }
 
 usb_reenumerate() {
-  local vendor="$1" dev hostbin
-  hostbin="${HOST_DOCKER_BIN:-}"
+  local vendor="$1" dev
   log "重新枚举 USB 设备 (vendor=$vendor)"
   for d in /sys/bus/usb/devices/*/idVendor; do
     [ -f "$d" ] || continue

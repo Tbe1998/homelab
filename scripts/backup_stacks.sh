@@ -18,10 +18,11 @@ stamp=$(date +%Y%m%d_%H%M%S)
 out="docker_config_${stamp}.tar.gz"
 
 # 只收配置，排除运行态大目录；.env 收进去是因为恢复时必须配套
+mapfile -t items < <(cd "$SRC" && ls -d */ 2>/dev/null)
 tar -czf "$out" -C "$SRC" \
   --exclude='*/mysql' --exclude='*/data' --exclude='*@eaDir*' \
   --exclude='*.log' --exclude='*.tar.gz' \
-  $(cd "$SRC" && ls -d */ 2>/dev/null) 2>/dev/null || true
+  "${items[@]}" 2>/dev/null || true
 
 [ -s "$out" ] || { echo "备份包为空，检查源目录" >&2; exit 1; }
 chmod 600 "$out"
