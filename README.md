@@ -1,5 +1,7 @@
 # homelab — 单机自建服务运维实践
 
+[![validate](https://github.com/Tbe1998/homelab/actions/workflows/validate.yml/badge.svg)](https://github.com/Tbe1998/homelab/actions/workflows/validate.yml)
+
 一台群晖 NAS（DSM 7.2 / Docker）上长期稳定运行的 11 个容器、1 条公网入口、
 若干自研服务的**配置模板 + 运维文档 + 巡检脚本**。
 
